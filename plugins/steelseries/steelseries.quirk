@@ -21,6 +21,13 @@ CounterpartGuid = USB\VID_1038&PID_1839
 FirmwareSize = 0x23000
 Flags = is-receiver
 
+[USB\STEELSERIES_FIZZ&VID_1038&PID_1838]
+Plugin = steelseries
+GType = FuSteelseriesFizzTunnel
+Name = Aerox 3 Wireless Mouse via USB Receiver
+Icon = input-mouse
+FirmwareSize = 0x27000
+
 [USB\VID_1038&PID_183A]
 Plugin = steelseries
 GType = FuSteelseriesFizz
