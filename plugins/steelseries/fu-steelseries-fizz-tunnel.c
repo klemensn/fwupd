@@ -163,6 +163,7 @@ fu_steelseries_fizz_tunnel_prepare(FuDevice *device,
 {
 	FuDevice *parent = fu_device_get_parent(device);
 	guint8 status;
+	guint8 level;
 
 	if (!fu_steelseries_fizz_connection_status(parent, &status, error)) {
 		g_prefix_error(error, "failed to get connection status: ");
@@ -173,6 +174,21 @@ fu_steelseries_fizz_tunnel_prepare(FuDevice *device,
 		g_set_error(error, FWUPD_ERROR, FWUPD_ERROR_NOT_FOUND, "device is unreachable");
 		return FALSE;
 	}
+	if (!fu_steelseries_fizz_battery_level(parent, TRUE, &level, error)) {
+		g_prefix_error(error, "failed to get battery level: ");
+		return FALSE;
+	}
+	g_debug("BatteryLevel: 0x%02x", level);
+	/*
+	 * CHARGING: Most significant bit. When bit is set to 1 it means battery is currently
+	 * charging/plugged in
+	 *
+	 * LEVEL: 7 least significant bit value of the battery. Values are between 2-21, to get %
+	 * you can do (LEVEL - 1) * 5
+	 */
+	fu_device_set_battery_level(device,
+				    ((level & STEELSERIES_FIZZ_BATTERY_LEVEL_STATUS_BITS) - 1U) *
+					5U);
 
 	/* success */
 	return TRUE;
@@ -294,6 +310,8 @@ fu_steelseries_fizz_tunnel_init(FuSteelseriesFizzTunnel *self)
 	fu_device_set_logical_id(FU_DEVICE(self), "fizz-tunnel");
 	fu_device_set_install_duration(FU_DEVICE(self), 38);				  /* 38 s */
 	fu_device_set_remove_delay(FU_DEVICE(self), FU_DEVICE_REMOVE_DELAY_RE_ENUMERATE); /* 10 s */
+	fu_device_set_battery_level(FU_DEVICE(self), FWUPD_BATTERY_LEVEL_INVALID);
+	fu_device_set_battery_threshold(FU_DEVICE(self), 20);
 }
 
 FuSteelseriesFizzTunnel *
